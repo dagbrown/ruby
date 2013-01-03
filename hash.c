@@ -1879,11 +1879,11 @@ rb_hash_update_block_i(VALUE key, VALUE value, VALUE hash)
  *     hsh.merge!(other_hash){|key, oldval, newval| block}    -> hsh
  *     hsh.update(other_hash){|key, oldval, newval| block}    -> hsh
  *
- *  Adds the contents of <i>other_hash</i> to <i>hsh</i>.  If no
- *  block is specified, entries with duplicate keys are overwritten
- *  with the values from <i>other_hash</i>, otherwise the value
- *  of each duplicate key is determined by calling the block with
- *  the key, its value in <i>hsh</i> and its value in <i>other_hash</i>.
+ *  Adds the contents of _other_hash_ to _hsh_.  If no block is specified,
+ *  entries with duplicate keys are overwritten with the values from
+ *  _other_hash_, otherwise the value of each duplicate key is determined by
+ *  calling the block with the key, its value in _hsh_ and its value in
+ *  _other_hash_.
  *
  *     h1 = { "a" => 100, "b" => 200 }
  *     h2 = { "b" => 254, "c" => 300 }
