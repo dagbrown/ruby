@@ -316,7 +316,12 @@ rb_threadptr_exec_event_hooks_orig(rb_trace_arg_t *trace_arg, int pop_p)
 	th->vm->trace_running--;
 
 	if (state) {
-	    if (pop_p) th->cfp = RUBY_VM_PREVIOUS_CONTROL_FRAME(th->cfp);
+	    if (pop_p) {
+		if (VM_FRAME_TYPE_FINISH_P(th->cfp)) {
+		    th->tag = th->tag->prev;
+		}
+		th->cfp = RUBY_VM_PREVIOUS_CONTROL_FRAME(th->cfp);
+	    }
 	    TH_JUMP_TAG(th, state);
 	}
 	th->state = outer_state;
@@ -541,6 +546,7 @@ get_event_id(rb_event_flag_t event)
 	C(thread_begin, THREAD_BEGIN);
 	C(thread_end, THREAD_END);
 	C(specified_line, SPECIFIED_LINE);
+      case RUBY_EVENT_LINE | RUBY_EVENT_SPECIFIED_LINE: CONST_ID(id, "line"); return id;
 #undef C
       default:
 	return 0;

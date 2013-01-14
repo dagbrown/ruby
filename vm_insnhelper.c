@@ -1065,13 +1065,13 @@ vm_caller_setup_args(const rb_thread_t *th, rb_control_frame_t *cfp, rb_call_inf
 }
 
 static inline int
-vm_callee_setup_keyword_arg(const rb_iseq_t *iseq, int argc, VALUE *orig_argv)
+vm_callee_setup_keyword_arg(const rb_iseq_t *iseq, int argc, VALUE *orig_argv, VALUE *kwd)
 {
-    VALUE keyword_hash = Qnil;
+    VALUE keyword_hash;
     int i, j;
 
-    if (argc > 0) keyword_hash = rb_check_hash_type(orig_argv[argc-1]);
-    if (!NIL_P(keyword_hash)) {
+    if (argc > 0 &&
+	!NIL_P(keyword_hash = rb_check_hash_type(orig_argv[argc-1]))) {
 	argc--;
 	keyword_hash = rb_hash_dup(keyword_hash);
 	if (iseq->arg_keyword_check) {
@@ -1087,7 +1087,7 @@ vm_callee_setup_keyword_arg(const rb_iseq_t *iseq, int argc, VALUE *orig_argv)
 	keyword_hash = rb_hash_new();
     }
 
-    orig_argv[iseq->arg_keyword] = keyword_hash;
+    *kwd = keyword_hash;
 
     return argc;
 }
@@ -1102,13 +1102,14 @@ vm_callee_setup_arg_complex(rb_thread_t *th, rb_call_info_t *ci, const rb_iseq_t
     const int orig_argc = ci->argc;
     int argc = orig_argc;
     VALUE *argv = orig_argv;
+    VALUE keyword_hash = Qnil;
     rb_num_t opt_pc = 0;
 
     th->mark_stack_len = argc + iseq->arg_size;
 
     /* keyword argument */
     if (iseq->arg_keyword != -1) {
-	argc = vm_callee_setup_keyword_arg(iseq, argc, orig_argv);
+	argc = vm_callee_setup_keyword_arg(iseq, argc, orig_argv, &keyword_hash);
     }
 
     /* mandatory */
@@ -1152,6 +1153,11 @@ vm_callee_setup_arg_complex(rb_thread_t *th, rb_call_info_t *ci, const rb_iseq_t
     if (iseq->arg_rest != -1) {
 	orig_argv[iseq->arg_rest] = rb_ary_new4(argc, argv);
 	argc = 0;
+    }
+
+    /* keyword argument */
+    if (iseq->arg_keyword != -1) {
+	orig_argv[iseq->arg_keyword] = keyword_hash;
     }
 
     /* block arguments */
@@ -1937,7 +1943,13 @@ vm_search_super_method(rb_thread_t *th, rb_control_frame_t *reg_cfp, rb_call_inf
 
     if (!FL_TEST(current_defined_class, RMODULE_INCLUDED_INTO_REFINEMENT) &&
 	!rb_obj_is_kind_of(ci->recv, current_defined_class)) {
-	rb_raise(rb_eNotImpError, "super from singleton method that is defined to multiple classes is not supported; this will be fixed in 2.0.0 or later");
+	VALUE m = RB_TYPE_P(current_defined_class, T_ICLASS) ?
+	    RBASIC(current_defined_class)->klass : current_defined_class;
+
+	rb_raise(rb_eTypeError,
+		 "self has wrong type to call super in this context: "
+		 "%s (expected %s)",
+		 rb_obj_classname(ci->recv), rb_class2name(m));
     }
 
     vm_search_superclass(GET_CFP(), iseq, sigval, ci);
@@ -2088,13 +2100,14 @@ vm_yield_setup_block_args(rb_thread_t *th, const rb_iseq_t * iseq,
     int argc = orig_argc;
     const int m = iseq->argc;
     VALUE ary, arg0;
+    VALUE keyword_hash = Qnil;
     int opt_pc = 0;
 
     th->mark_stack_len = argc;
 
     /* keyword argument */
     if (iseq->arg_keyword != -1) {
-	argc = vm_callee_setup_keyword_arg(iseq, argc, argv);
+	argc = vm_callee_setup_keyword_arg(iseq, argc, argv, &keyword_hash);
     }
 
     /*
@@ -2153,6 +2166,11 @@ vm_yield_setup_block_args(rb_thread_t *th, const rb_iseq_t * iseq,
 	}
 
 	th->mark_stack_len = iseq->arg_size;
+    }
+
+    /* keyword argument */
+    if (iseq->arg_keyword != -1) {
+	argv[iseq->arg_keyword] = keyword_hash;
     }
 
     /* {|&b|} */

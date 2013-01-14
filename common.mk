@@ -21,7 +21,6 @@ RUBYSPEC_GIT_URL = $(SPEC_GIT_BASE)/rubyspec.git
 STATIC_RUBY   = static-ruby
 
 EXTCONF       = extconf.rb
-RBCONFIG      = ./.rbconfig.time
 LIBRUBY_EXTS  = ./.libruby-with-ext.time
 REVISION_H    = ./.revision.time
 PLATFORM_D    = ./$(PLATFORM_DIR)/.time
@@ -475,9 +474,13 @@ check: main test test-all
 	$(ECHO) check succeeded
 check-ruby: test test-ruby
 
+fake: $(CROSS_COMPILING)-fake
+yes-fake: $(arch)-fake.rb $(RBCONFIG) PHONY
+no-fake: PHONY
+
 btest: $(TEST_RUNNABLE)-btest
 no-btest: PHONY
-yes-btest: miniruby$(EXEEXT) PHONY
+yes-btest: fake miniruby$(EXEEXT) PHONY
 	$(BOOTSTRAPRUBY) "$(srcdir)/bootstraptest/runner.rb" --ruby="$(BTESTRUBY)" $(OPTS) $(TESTOPTS)
 
 btest-ruby: $(TEST_RUNNABLE)-btest-ruby
@@ -935,14 +938,14 @@ $(srcdir)/ext/dl/callback/callback.c: $(srcdir)/ext/dl/callback/mkcallback.rb $(
 
 ##
 
-run: miniruby$(EXEEXT) PHONY
-	$(MINIRUBY) $(TESTRUN_SCRIPT) $(RUNOPT)
+run: fake miniruby$(EXEEXT) PHONY
+	$(BTESTRUBY) $(TESTRUN_SCRIPT) $(RUNOPT)
 
 runruby: $(PROGRAM) PHONY
 	$(RUNRUBY) $(TESTRUN_SCRIPT)
 
-parse: miniruby$(EXEEXT) PHONY
-	$(MINIRUBY) $(srcdir)/tool/parse.rb $(TESTRUN_SCRIPT)
+parse: fake miniruby$(EXEEXT) PHONY
+	$(BTESTRUBY) $(srcdir)/tool/parse.rb $(TESTRUN_SCRIPT)
 
 COMPARE_RUBY = $(BASERUBY)
 ITEM =

@@ -2435,6 +2435,7 @@ compile_array_(rb_iseq_t *iseq, LINK_ANCHOR *ret, NODE* node_root,
 			else {
 			    ADD_INSN(anchor, line, concatarray);
 			}
+
 			APPEND_LIST(ret, anchor);
 			break;
 		      case COMPILE_ARRAY_TYPE_HASH:
@@ -2460,6 +2461,10 @@ compile_array_(rb_iseq_t *iseq, LINK_ANCHOR *ret, NODE* node_root,
 			APPEND_LIST(ret, anchor);
 			break;
 		    }
+		}
+		else {
+		    /* poped */
+		    APPEND_LIST(ret, anchor);
 		}
 	    }
 	}
@@ -5011,7 +5016,7 @@ iseq_compile_each(rb_iseq_t *iseq, LINK_ANCHOR *ret, NODE * node, int poped)
 	LABEL *lend = NEW_LABEL(nd_line(node));
 	int ic_index = iseq->ic_size++;
 
-	  debugi("colon3#nd_mid", node->nd_mid);
+	debugi("colon3#nd_mid", node->nd_mid);
 
 	/* add cache insn */
 	if (iseq->compile_data->option->inline_const_cache) {
@@ -5051,12 +5056,11 @@ iseq_compile_each(rb_iseq_t *iseq, LINK_ANCHOR *ret, NODE * node, int poped)
 	LABEL *lend = NEW_LABEL(nd_line(node));
 	LABEL *lfin = NEW_LABEL(nd_line(node));
 	LABEL *ltrue = NEW_LABEL(nd_line(node));
-	struct iseq_compile_data *data = iseq->local_iseq->compile_data;
+	rb_iseq_t *local_iseq = iseq->local_iseq;
 	rb_num_t cnt;
 	VALUE key;
 
-	if (!data) data = iseq->compile_data;
-	cnt = data->flip_cnt++ + DEFAULT_SPECIAL_VAR_COUNT;
+	cnt = local_iseq->flip_cnt++ + DEFAULT_SPECIAL_VAR_COUNT;
 	key = INT2FIX(cnt);
 
 	ADD_INSN2(ret, nd_line(node), getspecial, key, INT2FIX(0));

@@ -9,13 +9,14 @@ definition:
 
 A method definition consists of the +def+ keyword, a method name, the body of
 the method, then the +end+ keyword.  When called the method will execute the
-body of the method.  This method returns <tt>2</tt>.
+body of the method.  This method returns +2+.
 
 == Return values
 
 By default, a method returns the last expression that was evaluated in the body
 of the method.  In the example above, the last (and only) expression evaluated
-was the simple sum <tt>1 + 1</tt>.  The <tt>return</tt> keyword can be used to
+was the simple sum <code>1 + 1</code>.  The +return+ keyword can be used to
+>>>>>>> upstream/trunk
 make it explicit that a method returns a value.
 
   def one_plus_one
@@ -34,13 +35,12 @@ evaluated.
 
 The standard syntax to define a method:
 
-
   def my_method
     # ...
   end
 
-add the method to a class.  You specify the class you're adding methods to with
-the "class" keyword.
+adds the method to a class.  You can define an instance method on a specific
+class with the +class+ keyword:
 
   class C
     def my_method
@@ -48,26 +48,8 @@ the "class" keyword.
     end
   end
 
-In many languages, the <tt>class</tt> keyword lets the compiler know that you're
-creating a class.  This is true in Ruby, too, the first time you use the
-<tt>class</tt> keyword: when it sees that you're <em>opening</em> a class for
-the first time, it creates it.  When you open a class that already exists, Ruby
-enables to you <em>extend</em> it with new methods.  You can even extend core
-classes:
-
-  class String
-    def hello
-      "Hello, world!"
-    end
-  end
-
-  "".hello # returns "Hello, world!"
-
-This is, however, as you might expect, somewhat risky, so this ability is best
-used sparingly.
-
-You can use <tt>def</tt> to add a method directly to a class, so that you can
-evaluate it with <tt>Class.my_method</tt>:
+A method may be defined on another object.  You may define a "class method" (a
+method that is defined on the class, not an instance of the class) like this:
 
   class C
     def self.my_method
@@ -75,19 +57,9 @@ evaluate it with <tt>Class.my_method</tt>:
     end
   end
 
-or a more concrete example:
-
-  class String
-    def self.hello
-      "Hello, world!"
-    end
-  end
-
-  String.hello # returns "Hello, world!"
-
-However, this is simply a special case of a greater syntactical power in Ruby:
-the ability to add methods to arbitrary objects.  Classes are, themselves,
-objects, so adding class methods is simply adding methods to the Class object.
+However, this is simply a special case of a greater syntactical power in Ruby,
+the ability to add methods to any object.  Classes are objects, so adding
+class methods is simply adding methods to the Class object.
 
 The syntax for adding a method to an object is as follows:
 
@@ -99,10 +71,10 @@ The syntax for adding a method to an object is as follows:
 
   greeting.broaden # returns "Hello, world!"
 
-<tt>self</tt> is a keyword referring to the current object under consideration
-by the compiler, which might make the use of <tt>self</tt> in defining a class
-method above a little clearer.  Indeed, the example of adding a <tt>hello</tt>
-method to the class <tt>String</tt> can be rewritten thus:
++self+ is a keyword referring to the current object under consideration
+by the compiler, which might make the use of +self+ in defining a class
+method above a little clearer.  Indeed, the example of adding a +hello+
+method to the class +String+ can be rewritten thus:
 
   def String.hello
     "Hello, world!"
@@ -115,24 +87,23 @@ exist on the string instance +greeting+.  Other strings will not have +broaden+.
 
 When Ruby encounters the +def+ keyword, it doesn't consider it an error if the
 method already exists: it simply redefines it.  This is called
-<em>overriding</em>.  Rather like extending core classes, this is a potentially
+_overriding_.  Rather like extending core classes, this is a potentially
 dangerous ability, and should be used sparingly because it can cause unexpected
 results.  For example, consider this irb session:
 
-  irb(main):001:0> "69".to_i
-  => 69
-  irb(main):002:0> class String
-  irb(main):003:1>   def to_i
-  irb(main):004:2>     42
-  irb(main):005:2>   end
-  irb(main):006:1> end
+  >> "43".to_i
+  => 43
+  >> class String
+  >>   def to_i
+  >>     42
+  >>   end
+  >> end
   => nil
-  irb(main):007:0> "69".to_i
+  >> "43".to_i
   => 42
-  irb(main):008:0> :) [~]
 
 This will effectively sabotage any code which makes use of the method
-+String#to_i+ to parse numbers from strings.
+<code>String#to_i</code> to parse numbers from strings.
 
 == Arguments
 
@@ -144,8 +115,8 @@ A method may accept arguments.  The argument list follows the method name:
 
 When called, the user of the +add_one+ method must provide an argument.  The
 argument is a local variable in the method body.  The method will then add one
-to this argument and return the value.  If given <tt>1</tt> this method will
-return <tt>2</tt>.
+to this argument and return the value.  If given +1+ this method will
+return +2+.
 
 The parentheses around the arguments are optional:
 

@@ -604,4 +604,27 @@ class TestRequire < Test::Unit::TestCase
       }
     }
   end
+
+  def test_require_with_loaded_features_pop
+    bug7530 = '[ruby-core:50645]'
+    script = Tempfile.new(%w'bug-7530- .rb')
+    script.close
+    assert_in_out_err([{"RUBYOPT" => nil}, "-", script.path], <<-INPUT, %w(:ok), [], bug7530)
+      PATH = ARGV.shift
+      THREADS = 2
+      ITERATIONS_PER_THREAD = 1000
+
+      THREADS.times.map {
+        Thread.new do
+          ITERATIONS_PER_THREAD.times do
+            require PATH
+            $".pop
+          end
+        end
+      }.each(&:join)
+      p :ok
+    INPUT
+  ensure
+    script.close(true) if script
+  end
 end

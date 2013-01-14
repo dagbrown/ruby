@@ -198,7 +198,7 @@ enumerator_ptr(VALUE obj)
  *          must not exceed the number expected by +method+
  *
  *  If a block is given, it will be used to calculate the size of
- *  the enumerator (see Enumerator#size=).
+ *  the enumerator (see Enumerator#size).
  *
  * === Example
  *
@@ -1486,7 +1486,7 @@ lazy_flat_map(VALUE obj)
 
     return lazy_set_method(rb_block_call(rb_cLazy, id_new, 1, &obj,
 					 lazy_flat_map_func, 0),
-			   Qnil, lazy_receiver_size);
+			   Qnil, 0);
 }
 
 static VALUE
